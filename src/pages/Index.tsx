@@ -72,7 +72,7 @@ const Index = () => {
             {[
               { value: "2M+", label: "Testes Realizados" },
               { value: "98%", label: "Satisfação" },
-              { value: "15min", label: "Duração Média" },
+              { value: "5min", label: "Duração Média" },
               { value: "4.9/5", label: "Avaliação" }
             ].map((stat, i) => (
               <div key={i} className="text-center space-y-2">
