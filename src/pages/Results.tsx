@@ -321,19 +321,19 @@ export default function Results() {
 
   const getPopulationComparison = (iq: number) => {
     if (iq >= 145) {
-      return "Seu QI é de genialidade excepcional! Você se destaca entre os 0.1% mais brilhantes da população, com um potencial intelectual raríssimo.";
+      return "Seu QI é de genialidade excepcional! Você se destaca entre os 0.1% mais brilhantes da população, com um potencial intelectual raríssimo. Suas capacidades cognitivas são extraordinárias, permitindo-lhe resolver problemas de altíssima complexidade e ver conexões que a maioria não percebe. Você tem um potencial imenso para inovações e contribuições significativas em qualquer campo que escolher.";
     } else if (iq >= 130) {
-      return "Você possui superdotação intelectual, colocando-o entre os 2% mais inteligentes do mundo. Suas capacidades são notáveis!";
+      return "Você possui superdotação intelectual, colocando-o entre os 2% mais inteligentes do mundo. Suas capacidades são notáveis! Você demonstra uma habilidade excepcional para aprender rapidamente, raciocinar de forma analítica e abstrata, e resolver problemas complexos com facilidade. Este é um indicativo de um grande potencial para liderança e sucesso em áreas que exigem pensamento crítico e inovação.";
     } else if (iq >= 120) {
-      return "Sua inteligência é superior à média! Você faz parte dos 9% da população com as maiores capacidades cognitivas.";
+      return "Sua inteligência é superior à média! Você faz parte dos 9% da população com as maiores capacidades cognitivas. Isso significa que você tem uma excelente capacidade de análise crítica, facilidade para aprender novos conceitos e um pensamento lógico bem desenvolvido. Você está bem posicionado para se destacar em ambientes acadêmicos e profissionais que demandam raciocínio complexo.";
     } else if (iq >= 110) {
-      return "Você demonstra inteligência acima da média, superando 75% da população. Um excelente potencial para o sucesso!";
+      return "Você demonstra inteligência acima da média, superando 75% da população. Um excelente potencial para o sucesso! Suas habilidades cognitivas permitem um bom desempenho em tarefas analíticas e uma capacidade sólida de raciocínio. Com dedicação, você pode alcançar posições de destaque e continuar a desenvolver suas capacidades para atingir seus objetivos.";
     } else if (iq >= 90) {
-      return "Seu QI está na faixa da média populacional. Com dedicação e estratégias de aprendizado, você pode expandir ainda mais suas habilidades cognitivas.";
+      return "Seu QI está na faixa da média populacional. Com dedicação e estratégias de aprendizado, você pode expandir ainda mais suas habilidades cognitivas. Você possui uma capacidade funcional de raciocínio e bom desempenho em tarefas práticas. O autoconhecimento de suas capacidades é o primeiro passo para um crescimento contínuo e para maximizar seu potencial.";
     } else if (iq >= 70) {
-      return "Seu QI indica um potencial em desenvolvimento. Com exercícios cognitivos e foco, você pode fortalecer suas capacidades e alcançar novos patamares.";
+      return "Seu QI indica um potencial em desenvolvimento. Com exercícios cognitivos e foco, você pode fortalecer suas capacidades e alcançar novos patamares. Você tem a capacidade de aprendizado prático e pode se beneficiar muito de treinamentos focados em raciocínio lógico e memória. Pequenas práticas diárias podem gerar grandes avanços em suas habilidades cognitivas.";
     } else {
-      return "Seu QI sugere que há um grande espaço para o desenvolvimento cognitivo. A prática regular de desafios mentais pode trazer melhorias significativas.";
+      return "Seu QI sugere que há um grande espaço para o desenvolvimento cognitivo. A prática regular de desafios mentais pode trazer melhorias significativas. Concentre-se em atividades que estimulem o raciocínio, como quebra-cabeças e leitura, para fortalecer suas habilidades. Lembre-se que a inteligência é maleável e pode ser aprimorada com esforço e as estratégias corretas.";
     }
   };
 
@@ -517,7 +517,7 @@ export default function Results() {
             <div className="space-y-3">
               {strengths.map((strength, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <span className="text-base">{strength}</span>
+                  <span className="text-base text-foreground font-semibold">{strength}</span>
                 </div>
               ))}
             </div>
