@@ -127,11 +127,18 @@ export default function IQTest() {
   const leadId = searchParams.get("leadId");
 
   useEffect(() => {
+    console.log("IQTest useEffect: Running. leadId:", leadId, "isCompleted before reset:", isCompleted);
+    // Clear any lingering local results from a previous session to ensure a clean start
+    localStorage.removeItem('lastTestResults');
+    localStorage.removeItem('pendingLeadId'); // Also clear pendingLeadId if test is restarted
+    localStorage.removeItem('currentLeadId'); // Also clear currentLeadId if test is restarted
+
     // Resetar o estado do teste sempre que o componente é montado ou o leadId muda
     setIsCompleted(false); 
     setCurrentQuestion(0);
     setAnswers({});
     setSelectedAnswer("");
+    console.log("IQTest useEffect: State reset. isCompleted after reset:", false);
 
     if (!leadId) {
       toast({
@@ -144,6 +151,9 @@ export default function IQTest() {
       console.log("IQTest: leadId from URL:", leadId);
     }
   }, [leadId, navigate]);
+
+  console.log("IQTest Render: isCompleted =", isCompleted, "currentQuestion =", currentQuestion, "leadId =", leadId);
+
 
   const progress = ((currentQuestion + 1) / questions.length) * 100;
 
