@@ -320,11 +320,21 @@ export default function Results() {
   };
 
   const getPopulationComparison = (iq: number) => {
-    if (iq >= 130) return "Você está no top 2% da população mundial! Isso representa aproximadamente 1 em cada 50 pessoas.";
-    if (iq >= 120) return "Você está no top 9% da população. Apenas cerca de 1 em cada 11 pessoas alcança esse nível.";
-    if (iq >= 110) return "Você está acima de 75% da população mundial em termos de QI.";
-    if (iq >= 90) return "Você está na faixa de 68% da população, considerada a média normal.";
-    return "Continue praticando! O QI pode ser desenvolvido com treino cognitivo regular.";
+    if (iq >= 145) {
+      return "Seu QI é de genialidade excepcional! Você se destaca entre os 0.1% mais brilhantes da população, com um potencial intelectual raríssimo.";
+    } else if (iq >= 130) {
+      return "Você possui superdotação intelectual, colocando-o entre os 2% mais inteligentes do mundo. Suas capacidades são notáveis!";
+    } else if (iq >= 120) {
+      return "Sua inteligência é superior à média! Você faz parte dos 9% da população com as maiores capacidades cognitivas.";
+    } else if (iq >= 110) {
+      return "Você demonstra inteligência acima da média, superando 75% da população. Um excelente potencial para o sucesso!";
+    } else if (iq >= 90) {
+      return "Seu QI está na faixa da média populacional. Com dedicação e estratégias de aprendizado, você pode expandir ainda mais suas habilidades cognitivas.";
+    } else if (iq >= 70) {
+      return "Seu QI indica um potencial em desenvolvimento. Com exercícios cognitivos e foco, você pode fortalecer suas capacidades e alcançar novos patamares.";
+    } else {
+      return "Seu QI sugere que há um grande espaço para o desenvolvimento cognitivo. A prática regular de desafios mentais pode trazer melhorias significativas.";
+    }
   };
 
   const performance = getPerformanceLevel(iqScore);
