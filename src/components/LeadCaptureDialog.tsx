@@ -39,7 +39,7 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
       // Generate UUID on client side to avoid RLS SELECT issues
       const leadId = crypto.randomUUID();
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("leads")
         .insert([{
           id: leadId,
@@ -48,6 +48,10 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
           phone: validatedData.phone,
         }]);
       
+      // Adicionando logs detalhados aqui
+      console.log("Supabase insert response - data:", data);
+      console.log("Supabase insert response - error:", error);
+
       if (error) {
         console.error("LeadCaptureDialog: Erro ao inserir lead no Supabase:", error); 
         throw error;
