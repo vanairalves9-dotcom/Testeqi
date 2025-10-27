@@ -127,6 +127,12 @@ export default function IQTest() {
   const leadId = searchParams.get("leadId");
 
   useEffect(() => {
+    // Resetar o estado do teste sempre que o componente é montado ou o leadId muda
+    setIsCompleted(false); 
+    setCurrentQuestion(0);
+    setAnswers({});
+    setSelectedAnswer("");
+
     if (!leadId) {
       toast({
         title: "Erro",
