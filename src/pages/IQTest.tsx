@@ -240,8 +240,8 @@ export default function IQTest() {
   };
 
   if (isCompleted) {
-    // TEMPORARY: Hardcoding BYPASS_PAYMENT to true for immediate testing
-    const BYPASS_PAYMENT_FOR_NOW = true; 
+    // TEMPORARY: Hardcoding BYPASS_PAYMENT to false to re-enable payment
+    const BYPASS_PAYMENT_FOR_NOW = false; 
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
