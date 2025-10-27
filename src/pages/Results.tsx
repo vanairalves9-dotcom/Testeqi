@@ -517,7 +517,7 @@ export default function Results() {
             <div className="space-y-3">
               {strengths.map((strength, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                  <span className="text-base text-foreground font-semibold">{strength}</span>
+                  <span className="text-base text-black font-semibold">{strength}</span>
                 </div>
               ))}
             </div>
