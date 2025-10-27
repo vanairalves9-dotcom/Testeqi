@@ -12,49 +12,64 @@ export default function Results() {
   const [loading, setLoading] = useState(true);
   const [score, setScore] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(16);
-  const leadId = searchParams.get("leadId");
+  const leadIdFromUrl = searchParams.get("leadId");
 
   useEffect(() => {
     const resolveAndLoad = async () => {
       const isValidUUID = (v?: string | null) => !!v && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
 
-      let resolvedLeadId = leadId || undefined;
+      let resolvedLeadId = leadIdFromUrl || undefined;
       const sck = searchParams.get('sck');
       const transaction = searchParams.get('transaction');
 
       const looksLikePlaceholder = resolvedLeadId === '{sck}' || resolvedLeadId === '{leadId}' || resolvedLeadId === '{transaction}';
+
+      console.log("Results: Initial leadId from URL:", leadIdFromUrl);
+      console.log("Results: sck from URL:", sck);
+      console.log("Results: transaction from URL:", transaction);
 
       if (!isValidUUID(resolvedLeadId) || looksLikePlaceholder) {
         resolvedLeadId = undefined;
 
         if (isValidUUID(sck)) {
           resolvedLeadId = sck!;
+          console.log("Results: Resolved leadId from sck:", resolvedLeadId);
         }
 
         if (!resolvedLeadId) {
           const stored = localStorage.getItem('currentLeadId') || localStorage.getItem('pendingLeadId');
-          if (isValidUUID(stored)) resolvedLeadId = stored!;
+          if (isValidUUID(stored)) {
+            resolvedLeadId = stored!;
+            console.log("Results: Resolved leadId from localStorage:", resolvedLeadId);
+          }
         }
 
         if (!resolvedLeadId && transaction) {
-          // Tenta resolver via payment_id
-          const { data } = await (supabase as any)
+          console.log("Results: Attempting to resolve leadId via payment_id (transaction):", transaction);
+          const { data } = await supabase
             .from('leads')
             .select('id')
             .eq('payment_id', transaction)
             .maybeSingle();
-          if (data) resolvedLeadId = (data as any).id;
+          if (data) {
+            resolvedLeadId = data.id;
+            console.log("Results: Resolved leadId from leads table via payment_id:", resolvedLeadId);
+          } else {
+            console.log("Results: No lead found for transaction:", transaction);
+          }
         }
       }
 
       if (resolvedLeadId && isValidUUID(resolvedLeadId)) {
         localStorage.setItem('currentLeadId', resolvedLeadId);
-        if (resolvedLeadId !== leadId) {
+        if (resolvedLeadId !== leadIdFromUrl) {
+          console.log("Results: Correcting URL with resolved leadId:", resolvedLeadId);
           navigate(`/resultado?leadId=${resolvedLeadId}`, { replace: true });
-          return; // URL corrigida, efeito rodará novamente
+          return; // URL corrected, effect will run again
         }
         await loadResults(resolvedLeadId);
       } else {
+        console.warn("Results: No valid leadId resolved. Attempting local storage fallback for display.");
         // Fallback imediato: tentar usar resultados locais sem depender de leadId
         const local = localStorage.getItem('lastTestResults');
         if (local) {
@@ -62,11 +77,11 @@ export default function Results() {
             const parsed = JSON.parse(local);
             setScore(Number(parsed.score) || 0);
             setTotalQuestions(Number(parsed.total_questions) || 16);
-            console.log('Usando resultados do localStorage por leadId inválido/placeholder.');
+            console.log('Results: Usando resultados do localStorage por leadId inválido/placeholder.');
             setLoading(false);
             return;
           } catch (e) {
-            console.warn('Falha ao ler fallback local (sem leadId):', e);
+            console.warn('Results: Falha ao ler fallback local (sem leadId):', e);
           }
         }
         toast({
@@ -79,13 +94,13 @@ export default function Results() {
     };
 
     resolveAndLoad();
-  }, [leadId, navigate, searchParams]);
+  }, [leadIdFromUrl, navigate, searchParams]);
 
   const loadResults = async (id: string) => {
     try {
-      console.log('Buscando resultados para leadId:', id);
+      console.log('Results: Buscando resultados para leadId:', id);
       
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("iq_test_results")
         .select("score, total_questions")
         .eq("lead_id", id)
@@ -93,28 +108,28 @@ export default function Results() {
         .limit(1)
         .maybeSingle();
 
-      console.log('Dados retornados:', data);
+      console.log('Results: Dados retornados do Supabase:', data);
 
       if (error) {
-        console.error('Erro na query:', error);
+        console.error('Results: Erro na query do Supabase:', error);
       }
 
-      if (data && (data as any).score !== undefined) {
-        console.log('Score encontrado:', (data as any).score);
-        setScore((data as any).score);
-        setTotalQuestions((data as any).total_questions);
+      if (data && data.score !== undefined) {
+        console.log('Results: Score encontrado no Supabase:', data.score);
+        setScore(data.score);
+        setTotalQuestions(data.total_questions);
       } else {
-        console.log('Nenhum resultado encontrado no backend. Tentando fallback local.');
+        console.log('Results: Nenhum resultado encontrado no backend. Tentando fallback local.');
         const local = localStorage.getItem('lastTestResults');
         if (local) {
           try {
             const parsed = JSON.parse(local);
             setScore(Number(parsed.score) || 0);
             setTotalQuestions(Number(parsed.total_questions) || 16);
-            console.log('Resultados carregados do localStorage.');
+            console.log('Results: Resultados carregados do localStorage.');
             return;
           } catch (e) {
-            console.warn('Falha ao ler fallback local:', e);
+            console.warn('Results: Falha ao ler fallback local:', e);
           }
         }
         toast({
@@ -124,7 +139,7 @@ export default function Results() {
         });
       }
     } catch (error) {
-      console.error("Error loading results:", error);
+      console.error("Results: Error loading results:", error);
       // Fallback mesmo em caso de erro
       const local = localStorage.getItem('lastTestResults');
       if (local) {
@@ -132,7 +147,7 @@ export default function Results() {
           const parsed = JSON.parse(local);
           setScore(Number(parsed.score) || 0);
           setTotalQuestions(Number(parsed.total_questions) || 16);
-          console.log('Resultados carregados do localStorage após erro.');
+          console.log('Results: Resultados carregados do localStorage após erro.');
           return; // evita toast de erro se conseguimos exibir algo
         } catch {}
       }

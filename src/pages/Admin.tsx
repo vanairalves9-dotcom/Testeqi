@@ -35,8 +35,8 @@ export default function Admin() {
       }
 
       // Check if user is admin
-      const { data: roleData, error: roleError } = await (supabase as any)
-        .from("user_roles")
+      const { data: roleData, error: roleError } = await supabase
+        .from("user_roles") // Assuming 'user_roles' table exists for admin check
         .select("role")
         .eq("user_id", session.user.id)
         .eq("role", "admin")
@@ -55,7 +55,7 @@ export default function Admin() {
       setIsAdmin(true);
       
       // Fetch leads
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("leads")
         .select("*")
         .order("created_at", { ascending: false });

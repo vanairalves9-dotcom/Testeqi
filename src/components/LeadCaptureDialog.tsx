@@ -38,7 +38,7 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
       // Generate UUID on client side to avoid RLS SELECT issues
       const leadId = crypto.randomUUID();
       
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("leads")
         .insert([{
           id: leadId,

@@ -1,5 +1,9 @@
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-ignore
+import type { Database } from "../../src/integrations/supabase/types.ts"; // Import the Database type
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,9 +16,11 @@ serve(async (req) => {
   }
 
   try {
+    // @ts-ignore
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    // @ts-ignore
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
     const payload = await req.json();
     console.log('Hotmart webhook received:', payload);

@@ -14,7 +14,103 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      leads: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          phone: string
+          created_at: string
+          payment_status: string | null
+          payment_id: string | null
+          payment_confirmed: boolean | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          phone: string
+          created_at?: string
+          payment_status?: string | null
+          payment_id?: string | null
+          payment_confirmed?: boolean | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          phone?: string
+          created_at?: string
+          payment_status?: string | null
+          payment_id?: string | null
+          payment_confirmed?: boolean | null
+        }
+        Relationships: []
+      }
+      iq_test_results: {
+        Row: {
+          id: string
+          lead_id: string
+          answers: Json
+          score: number
+          total_questions: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          lead_id: string
+          answers: Json
+          score: number
+          total_questions: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          lead_id?: string
+          answers?: Json
+          score?: number
+          total_questions?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "iq_test_results_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          user_id: string
+          role: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          role: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          role?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

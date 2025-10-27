@@ -16,7 +16,7 @@ export default function ThankYou() {
 
     const checkPaymentStatus = async () => {
       try {
-        console.log(`Tentativa ${attempts + 1}/${MAX_ATTEMPTS} de verificar pagamento`);
+        console.log(`ThankYou: Tentativa ${attempts + 1}/${MAX_ATTEMPTS} de verificar pagamento`);
         
         // 1. Tentar pegar leadId válido da URL, localStorage ou via transaction
         const isValidUUID = (v?: string | null) => !!v && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
@@ -31,37 +31,42 @@ export default function ThankYou() {
 
         if (isValidUUID(rawLeadFromUrl) && !looksLikePlaceholder) {
           leadId = rawLeadFromUrl!;
+          console.log("ThankYou: Resolved leadId from URL:", leadId);
         } else if (isValidUUID(leadIdFromStorage)) {
           leadId = leadIdFromStorage!;
+          console.log("ThankYou: Resolved leadId from localStorage:", leadId);
         } else if (transactionFromUrl) {
           setStatus("Buscando seus dados...");
-          const { data } = await (supabase as any)
+          console.log("ThankYou: Attempting to resolve leadId via payment_id (transaction):", transactionFromUrl);
+          const { data } = await supabase
             .from('leads')
             .select('id, payment_confirmed')
             .eq('payment_id', transactionFromUrl)
             .maybeSingle();
           if (data) {
-            leadId = (data as any).id;
+            leadId = data.id;
             localStorage.setItem('currentLeadId', leadId);
+            console.log("ThankYou: Resolved leadId from leads table via payment_id:", leadId);
+          } else {
+            console.log("ThankYou: No lead found for transaction:", transactionFromUrl);
           }
         }
         
-        console.log('LeadId resolvido:', leadId);
-        console.log('Transaction da URL:', transactionFromUrl);
+        console.log('ThankYou: Final resolved leadId:', leadId);
         
         if (leadId) {
           // 3. Verificar se o pagamento foi confirmado
           setStatus("Confirmando pagamento...");
-          const { data: lead } = await (supabase as any)
+          const { data: lead } = await supabase
             .from('leads')
             .select('payment_confirmed')
             .eq('id', leadId)
             .maybeSingle();
           
-          console.log('Status do pagamento:', lead);
+          console.log('ThankYou: Status do pagamento para leadId', leadId, ':', lead);
           
-          if (lead && (lead as any).payment_confirmed) {
-            console.log('Pagamento confirmado! Redirecionando...');
+          if (lead && lead.payment_confirmed) {
+            console.log('ThankYou: Pagamento confirmado! Redirecionando...');
             setStatus("Pagamento confirmado! Redirecionando...");
             localStorage.removeItem('pendingLeadId');
             clearInterval(interval);
@@ -74,13 +79,13 @@ export default function ThankYou() {
         
         // 4. Se chegou no máximo de tentativas, redireciona mesmo assim
         if (attempts >= MAX_ATTEMPTS - 1) {
-          console.log('Máximo de tentativas atingido');
+          console.log('ThankYou: Máximo de tentativas atingido');
           if (leadId) {
-            console.log('Redirecionando com leadId:', leadId);
+            console.log('ThankYou: Redirecionando com leadId:', leadId);
             setStatus("Redirecionando para seus resultados...");
             navigate(`/resultado?leadId=${leadId}`, { replace: true });
           } else {
-            console.log('Nenhum leadId encontrado, redirecionando para home');
+            console.log('ThankYou: Nenhum leadId encontrado, redirecionando para home');
             setStatus("Redirecionando...");
             navigate("/", { replace: true });
           }
@@ -90,7 +95,7 @@ export default function ThankYou() {
         
         setAttempts(prev => prev + 1);
       } catch (error) {
-        console.error('Error checking payment:', error);
+        console.error('ThankYou: Error checking payment:', error);
         setAttempts(prev => prev + 1);
       }
     };

@@ -1,5 +1,9 @@
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// @ts-ignore
+import type { Database } from "../../src/integrations/supabase/types.ts"; // Import the Database type
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,11 +17,14 @@ serve(async (req) => {
   }
 
   try {
+    // @ts-ignore
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    // @ts-ignore
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    // @ts-ignore
     const mercadoPagoToken = Deno.env.get('MERCADO_PAGO_ACCESS_TOKEN')!;
     
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
     const notification = await req.json();
     console.log('Received Mercado Pago notification:', notification);

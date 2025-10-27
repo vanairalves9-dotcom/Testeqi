@@ -134,6 +134,8 @@ export default function IQTest() {
         variant: "destructive",
       });
       navigate("/");
+    } else {
+      console.log("IQTest: leadId from URL:", leadId);
     }
   }, [leadId, navigate]);
 
@@ -160,6 +162,7 @@ export default function IQTest() {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
     } else {
+      console.log("IQTest: Test completed. Calculating and submitting results.");
       calculateAndSubmitResults(newAnswers);
     }
   };
@@ -182,6 +185,7 @@ export default function IQTest() {
     });
 
     setScore(correctCount);
+    console.log("IQTest: Calculated score:", correctCount);
 
     try {
       // Persist locally as fallback for the Results page
@@ -191,29 +195,39 @@ export default function IQTest() {
         lead_id: leadId,
         created_at: Date.now(),
       }));
+      console.log("IQTest: Results saved to localStorage.");
 
-      const { error } = await (supabase as any)
-        .from("iq_test_results")
-        .insert([
-          {
-            lead_id: leadId,
-            answers: finalAnswers,
-            score: correctCount,
-            total_questions: questions.length,
-          }
-        ]);
+      if (leadId) {
+        console.log("IQTest: Attempting to save results to Supabase for leadId:", leadId);
+        const { error } = await supabase
+          .from("iq_test_results")
+          .insert([
+            {
+              lead_id: leadId,
+              answers: finalAnswers,
+              score: correctCount,
+              total_questions: questions.length,
+            }
+          ]);
 
-      if (error) throw error;
+        if (error) {
+          console.error("IQTest: Error saving test results to Supabase:", error);
+          throw error;
+        }
+        console.log("IQTest: Results successfully saved to Supabase.");
+      } else {
+        console.warn("IQTest: No leadId available, skipping Supabase insert.");
+      }
 
       setIsCompleted(true);
     } catch (error) {
-      console.error("Error saving test results:", error);
+      console.error("IQTest: Error saving test results:", error);
       toast({
         title: "Erro ao salvar resultados",
         description: "Seus resultados foram calculados, mas houve um erro ao salvá-los.",
         variant: "destructive",
       });
-      setIsCompleted(true);
+      setIsCompleted(true); // Still mark as completed to allow user to proceed
     } finally {
       setLoading(false);
     }
@@ -249,6 +263,7 @@ export default function IQTest() {
               onClick={() => {
                 // Salvar leadId no localStorage para recuperar após pagamento
                 localStorage.setItem('pendingLeadId', leadId!);
+                console.log("IQTest: Redirecting to Hotmart with leadId:", leadId);
                 // Redirecionar para Hotmart com leadId como parâmetro
                 window.location.href = `https://pay.hotmart.com/Q102383778L?leadId=${leadId}`;
               }}
