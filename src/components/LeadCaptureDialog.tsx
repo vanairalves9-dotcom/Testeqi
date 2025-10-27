@@ -36,20 +36,18 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
       
       setLoading(true);
       
-      // Generate UUID on client side to avoid RLS SELECT issues
-      const leadId = crypto.randomUUID();
-      
-      const { data, error } = await supabase
+      // Removendo a geração de UUID no cliente e deixando o banco de dados gerar
+      const { data: insertedData, error } = await supabase
         .from("leads")
         .insert([{
-          id: leadId,
           name: validatedData.name,
           email: validatedData.email,
           phone: validatedData.phone,
-        }]);
-      
+        }])
+        .select(); // Adiciona .select() para retornar os dados inseridos
+
       // Adicionando logs detalhados aqui
-      console.log("Supabase insert response - data:", data);
+      console.log("Supabase insert response - data:", insertedData);
       console.log("Supabase insert response - error:", error);
 
       if (error) {
@@ -57,6 +55,18 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
         throw error;
       }
       
+      // Verifica se algum dado foi realmente retornado
+      if (!insertedData || insertedData.length === 0) {
+        console.error("LeadCaptureDialog: Inserção falhou silenciosamente, nenhum dado retornado.");
+        toast({
+          title: "Erro ao salvar dados",
+          description: "Não foi possível salvar seu lead. Por favor, tente novamente mais tarde.", 
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const leadId = insertedData[0].id; // Pega o ID gerado pelo banco de dados
       console.log("LeadCaptureDialog: Lead inserido com sucesso! ID:", leadId); 
       
       // Reset form
