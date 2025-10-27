@@ -240,6 +240,9 @@ export default function IQTest() {
   };
 
   if (isCompleted) {
+    // Check for bypass payment environment variable
+    const BYPASS_PAYMENT = import.meta.env.VITE_BYPASS_PAYMENT === 'true';
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl">
@@ -261,11 +264,17 @@ export default function IQTest() {
 
             <Button 
               onClick={() => {
-                // Salvar leadId no localStorage para recuperar após pagamento
-                localStorage.setItem('pendingLeadId', leadId!);
-                console.log("IQTest: Redirecting to Hotmart with leadId:", leadId);
-                // Redirecionar para Hotmart com leadId como parâmetro
-                window.location.href = `https://pay.hotmart.com/Q102383778L?leadId=${leadId}`;
+                if (BYPASS_PAYMENT) {
+                  console.log("IQTest: Bypassing payment, redirecting directly to results for leadId:", leadId);
+                  localStorage.removeItem('pendingLeadId'); // Clear any pending state
+                  navigate(`/resultado?leadId=${leadId}`, { replace: true });
+                } else {
+                  // Salvar leadId no localStorage para recuperar após pagamento
+                  localStorage.setItem('pendingLeadId', leadId!);
+                  console.log("IQTest: Redirecting to Hotmart with leadId:", leadId);
+                  // Redirecionar para Hotmart com leadId como parâmetro
+                  window.location.href = `https://pay.hotmart.com/Q102383778L?leadId=${leadId}`;
+                }
               }}
               className="w-full"
               size="lg"

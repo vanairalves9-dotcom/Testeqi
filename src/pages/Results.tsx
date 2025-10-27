@@ -76,7 +76,7 @@ export default function Results() {
           try {
             const parsed = JSON.parse(local);
             setScore(Number(parsed.score) || 0);
-            setTotalQuestions(Number(parsed.total_questions) || 16);
+            setTotalQuestions(Number(parsed.total_questions) || 16); // Corrected here
             console.log('Results: Usando resultados do localStorage por leadId inválido/placeholder.');
             setLoading(false);
             return;
