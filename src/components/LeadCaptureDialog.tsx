@@ -32,6 +32,7 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
     try {
       // Validate
       const validatedData = leadSchema.parse({ name, email, phone });
+      console.log("LeadCaptureDialog: Dados validados para inserção:", validatedData); 
       
       setLoading(true);
       
@@ -47,7 +48,12 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
           phone: validatedData.phone,
         }]);
       
-      if (error) throw error;
+      if (error) {
+        console.error("LeadCaptureDialog: Erro ao inserir lead no Supabase:", error); 
+        throw error;
+      }
+      
+      console.log("LeadCaptureDialog: Lead inserido com sucesso! ID:", leadId); 
       
       // Reset form
       setName("");
@@ -60,15 +66,17 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
       
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("LeadCaptureDialog: Erro de validação Zod:", error.errors); 
         toast({
           title: "Erro de validação",
           description: error.errors[0].message,
           variant: "destructive",
         });
       } else {
+        console.error("LeadCaptureDialog: Erro inesperado ao enviar dados:", error); 
         toast({
           title: "Erro ao enviar dados",
-          description: "Tente novamente mais tarde.",
+          description: "Não foi possível salvar seu lead. Por favor, tente novamente mais tarde.", 
           variant: "destructive",
         });
       }
