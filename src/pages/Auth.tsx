@@ -18,7 +18,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  // Removido o estado isSignUp, agora é sempre login
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,48 +45,21 @@ export default function Auth() {
       const validatedData = authSchema.parse({ email, password });
       setLoading(true);
 
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email: validatedData.email,
-          password: validatedData.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
-          },
-        });
+      // Apenas lógica de login
+      const { error } = await supabase.auth.signInWithPassword({
+        email: validatedData.email,
+        password: validatedData.password,
+      });
 
-        if (error) {
-          if (error.message.includes("already registered")) {
-            toast({
-              title: "Email já cadastrado",
-              description: "Use o login ou recupere sua senha.",
-              variant: "destructive",
-            });
-          } else {
-            throw error;
-          }
-        } else {
+      if (error) {
+        if (error.message.includes("Invalid")) {
           toast({
-            title: "Conta criada!",
-            description: "Você já pode fazer login.",
+            title: "Credenciais inválidas",
+            description: "Email ou senha incorretos.",
+            variant: "destructive",
           });
-          setIsSignUp(false);
-        }
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: validatedData.email,
-          password: validatedData.password,
-        });
-
-        if (error) {
-          if (error.message.includes("Invalid")) {
-            toast({
-              title: "Credenciais inválidas",
-              description: "Email ou senha incorretos.",
-              variant: "destructive",
-            });
-          } else {
-            throw error;
-          }
+        } else {
+          throw error;
         }
       }
     } catch (error) {
@@ -117,17 +90,10 @@ export default function Auth() {
               <Brain className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl">{isSignUp ? "Criar Conta Admin" : "Login Admin"}</CardTitle>
+          <CardTitle className="text-2xl">Login Admin</CardTitle>
           <CardDescription>
-            {isSignUp 
-              ? "Crie sua conta de administrador para gerenciar os leads" 
-              : "Faça login para acessar o painel administrativo"}
+            Faça login para acessar o painel administrativo
           </CardDescription>
-          {!isSignUp && (
-            <p className="text-xs text-muted-foreground mt-2">
-              💡 Primeira vez? Clique em "Cadastre-se" abaixo para criar sua conta
-            </p>
-          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
@@ -156,18 +122,10 @@ export default function Auth() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Processando..." : isSignUp ? "Cadastrar" : "Entrar"}
+              {loading ? "Processando..." : "Entrar"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-primary hover:underline font-medium"
-            >
-              {isSignUp ? "Já tem conta? Faça login" : "Não tem conta? Cadastre-se"}
-            </button>
-          </div>
+          {/* Removido o botão de alternar para cadastro */}
         </CardContent>
       </Card>
     </div>
