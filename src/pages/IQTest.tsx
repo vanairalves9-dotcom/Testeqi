@@ -240,8 +240,8 @@ export default function IQTest() {
   };
 
   if (isCompleted) {
-    // Check for bypass payment environment variable
-    const BYPASS_PAYMENT = import.meta.env.VITE_BYPASS_PAYMENT === 'true';
+    // TEMPORARY: Hardcoding BYPASS_PAYMENT to true for immediate testing
+    const BYPASS_PAYMENT_FOR_NOW = true; 
 
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex items-center justify-center p-4">
@@ -264,7 +264,7 @@ export default function IQTest() {
 
             <Button 
               onClick={() => {
-                if (BYPASS_PAYMENT) {
+                if (BYPASS_PAYMENT_FOR_NOW) { // Using the hardcoded bypass
                   console.log("IQTest: Bypassing payment, redirecting directly to results for leadId:", leadId);
                   localStorage.removeItem('pendingLeadId'); // Clear any pending state
                   navigate(`/resultado?leadId=${leadId}`, { replace: true });
