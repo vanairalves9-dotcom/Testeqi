@@ -289,7 +289,7 @@ export default function IQTest() {
                   localStorage.setItem('pendingLeadId', leadId!);
                   console.log("IQTest: Redirecting to Hotmart with leadId:", leadId);
                   // Redirecionar para Hotmart com leadId como parâmetro
-                  window.location.href = `https://pay.hotmart.com/Q102383778L?leadId=${leadId}`;
+                  window.location.href = `https://pay.hotmart.com/Q102383778L?leadId=${leadId}&return_url=${window.location.origin}/obrigado?sck={sck}`;
                 }
               }}
               className="w-full"
