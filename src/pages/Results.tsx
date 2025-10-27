@@ -17,66 +17,63 @@ export default function Results() {
   useEffect(() => {
     const resolveAndLoad = async () => {
       const isValidUUID = (v?: string | null) => !!v && /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(v);
+      const isPlaceholder = (v?: string | null) => v === '{sck}' || v === '{leadId}' || v === '{transaction}';
 
-      let resolvedLeadId = leadIdFromUrl || undefined;
-      const sck = searchParams.get('sck');
-      const transaction = searchParams.get('transaction');
+      let finalLeadId: string | undefined;
 
-      const looksLikePlaceholder = resolvedLeadId === '{sck}' || resolvedLeadId === '{leadId}' || resolvedLeadId === '{transaction}';
+      // Candidatos da URL
+      const urlLeadId = searchParams.get("leadId");
+      const urlSck = searchParams.get('sck');
+      const urlTransaction = searchParams.get('transaction');
 
-      console.log("Results: Initial leadId from URL:", leadIdFromUrl);
-      console.log("Results: sck from URL:", sck);
-      console.log("Results: transaction from URL:", transaction);
+      // Candidatos do localStorage
+      const storedCurrentLeadId = localStorage.getItem('currentLeadId');
+      const storedPendingLeadId = localStorage.getItem('pendingLeadId');
 
-      if (!isValidUUID(resolvedLeadId) || looksLikePlaceholder) {
-        resolvedLeadId = undefined;
+      // Coleta e filtra todos os candidatos válidos (UUID e não placeholder)
+      const candidates = [
+        urlLeadId,
+        urlSck,
+        storedCurrentLeadId,
+        storedPendingLeadId,
+      ].filter(v => v && isValidUUID(v) && !isPlaceholder(v)) as string[];
 
-        if (isValidUUID(sck)) {
-          resolvedLeadId = sck!;
-          console.log("Results: Resolved leadId from sck:", resolvedLeadId);
-        }
-
-        if (!resolvedLeadId) {
-          const stored = localStorage.getItem('currentLeadId') || localStorage.getItem('pendingLeadId');
-          if (isValidUUID(stored)) {
-            resolvedLeadId = stored!;
-            console.log("Results: Resolved leadId from localStorage:", resolvedLeadId);
-          }
-        }
-
-        if (!resolvedLeadId && transaction) {
-          console.log("Results: Attempting to resolve leadId via payment_id (transaction):", transaction);
-          const { data } = await supabase
-            .from('leads')
-            .select('id')
-            .eq('payment_id', transaction)
-            .maybeSingle();
-          if (data) {
-            resolvedLeadId = data.id;
-            console.log("Results: Resolved leadId from leads table via payment_id:", resolvedLeadId);
-          } else {
-            console.log("Results: No lead found for transaction:", transaction);
-          }
+      if (candidates.length > 0) {
+        finalLeadId = candidates[0]; // Pega o primeiro UUID válido encontrado
+        console.log("Results: Resolved leadId from candidates:", finalLeadId);
+      } else if (urlTransaction && !isPlaceholder(urlTransaction)) {
+        // Se nenhum UUID foi encontrado ainda, tenta resolver via ID de transação da URL
+        console.log("Results: Attempting to resolve leadId via payment_id (transaction):", urlTransaction);
+        const { data } = await supabase
+          .from('leads')
+          .select('id')
+          .eq('payment_id', urlTransaction)
+          .maybeSingle();
+        if (data) {
+          finalLeadId = data.id;
+          console.log("Results: Resolved leadId from leads table via payment_id:", finalLeadId);
+        } else {
+          console.log("Results: No lead found for transaction:", urlTransaction);
         }
       }
 
-      if (resolvedLeadId && isValidUUID(resolvedLeadId)) {
-        localStorage.setItem('currentLeadId', resolvedLeadId);
-        if (resolvedLeadId !== leadIdFromUrl) {
-          console.log("Results: Correcting URL with resolved leadId:", resolvedLeadId);
-          navigate(`/resultado?leadId=${resolvedLeadId}`, { replace: true });
-          return; // URL corrected, effect will run again
+      if (finalLeadId) {
+        localStorage.setItem('currentLeadId', finalLeadId);
+        // Garante que a URL reflita o leadId correto se ele foi resolvido de outra fonte
+        if (finalLeadId !== urlLeadId) {
+          console.log("Results: Correcting URL with resolved leadId:", finalLeadId);
+          navigate(`/resultado?leadId=${finalLeadId}`, { replace: true });
+          return; // URL corrigida, o effect será executado novamente com a URL correta
         }
-        await loadResults(resolvedLeadId);
+        await loadResults(finalLeadId);
       } else {
         console.warn("Results: No valid leadId resolved. Attempting local storage fallback for display.");
-        // Fallback imediato: tentar usar resultados locais sem depender de leadId
         const local = localStorage.getItem('lastTestResults');
         if (local) {
           try {
             const parsed = JSON.parse(local);
             setScore(Number(parsed.score) || 0);
-            setTotalQuestions(Number(parsed.total_questions) || 16); // Corrected here
+            setTotalQuestions(Number(parsed.total_questions) || 16);
             console.log('Results: Usando resultados do localStorage por leadId inválido/placeholder.');
             setLoading(false);
             return;
