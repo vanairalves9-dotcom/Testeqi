@@ -79,23 +79,33 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
       navigate(`/teste?leadId=${leadId}`);
       
     } catch (error) {
+      setLoading(false); // Garante que o estado de carregamento seja resetado
+      console.error("LeadCaptureDialog: Erro ao enviar dados:", error);
+      console.trace("LeadCaptureDialog: Stack trace do erro:");
+
+      let errorMessage = "Não foi possível salvar seu lead. Por favor, tente novamente mais tarde.";
+      let errorTitle = "Erro ao enviar dados";
+
       if (error instanceof z.ZodError) {
-        console.error("LeadCaptureDialog: Erro de validação Zod:", error.errors); 
-        toast({
-          title: "Erro de validação",
-          description: error.errors[0].message,
-          variant: "destructive",
-        });
-      } else {
-        console.error("LeadCaptureDialog: Erro inesperado ao enviar dados:", error); 
-        toast({
-          title: "Erro ao enviar dados",
-          description: "Não foi possível salvar seu lead. Por favor, tente novamente mais tarde.", 
-          variant: "destructive",
-        });
+        errorTitle = "Erro de validação";
+        errorMessage = error.errors[0].message;
+        console.error("LeadCaptureDialog: Erro de validação Zod:", error.errors);
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        // Tenta obter uma mensagem mais específica do objeto de erro
+        const err = error as Error;
+        errorMessage = err.message;
+        if (err.name === "TypeError" && (errorMessage.includes("NetworkError") || errorMessage.includes("Failed to fetch"))) {
+          errorMessage = "Problema de conexão com o servidor. Verifique sua internet ou tente novamente.";
+        }
       }
+
+      toast({
+        title: errorTitle,
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
+      // O setLoading(false) foi movido para o início do bloco catch para garantir que seja sempre executado em caso de erro.
     }
   };
 
