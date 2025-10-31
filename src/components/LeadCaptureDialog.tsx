@@ -29,15 +29,38 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    setLoading(true); // Inicia o carregamento aqui
+
     try {
       // Validate
       const validatedData = leadSchema.parse({ name, email, phone });
       console.log("LeadCaptureDialog: Dados validados para inserção:", validatedData); 
       
-      setLoading(true);
-      
-      // Removendo a geração de UUID no cliente e deixando o banco de dados gerar
-      const { data: insertedData, error } = await supabase
+      // 1. Verificar se o lead com este email já existe
+      const { data: existingLead, error: fetchError } = await supabase
+        .from("leads")
+        .select("id")
+        .eq("email", validatedData.email)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error("LeadCaptureDialog: Erro ao buscar lead existente:", fetchError);
+        throw fetchError;
+      }
+
+      if (existingLead) {
+        console.log("LeadCaptureDialog: Lead existente encontrado para o email:", validatedData.email, "ID:", existingLead.id);
+        toast({
+          title: "Email já cadastrado",
+          description: "Parece que você já iniciou um teste com este email. Redirecionando para o seu teste.",
+        });
+        onOpenChange(false);
+        navigate(`/teste?leadId=${existingLead.id}`);
+        return; // Interrompe a execução, pois já lidamos com o lead existente
+      }
+
+      // Se não existe, prosseguir com a inserção de um novo lead
+      const { data: insertedData, error: insertError } = await supabase
         .from("leads")
         .insert([{
           name: validatedData.name,
@@ -48,11 +71,11 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
 
       // Adicionando logs detalhados aqui
       console.log("Supabase insert response - data:", insertedData);
-      console.log("Supabase insert response - error:", error);
+      console.log("Supabase insert response - error:", insertError);
 
-      if (error) {
-        console.error("LeadCaptureDialog: Erro ao inserir lead no Supabase:", error); 
-        throw error;
+      if (insertError) {
+        console.error("LeadCaptureDialog: Erro ao inserir lead no Supabase:", insertError); 
+        throw insertError;
       }
       
       // Verifica se algum dado foi realmente retornado
@@ -79,7 +102,6 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
       navigate(`/teste?leadId=${leadId}`);
       
     } catch (error) {
-      setLoading(false); // Garante que o estado de carregamento seja resetado
       console.error("LeadCaptureDialog: Erro ao enviar dados:", error);
       console.trace("LeadCaptureDialog: Stack trace do erro:");
 
@@ -105,7 +127,7 @@ export function LeadCaptureDialog({ open, onOpenChange }: LeadCaptureDialogProps
         variant: "destructive",
       });
     } finally {
-      // O setLoading(false) foi movido para o início do bloco catch para garantir que seja sempre executado em caso de erro.
+      setLoading(false); // Garante que o estado de carregamento seja sempre resetado
     }
   };
 
